@@ -14,12 +14,12 @@ class UserService {
 
     const hashedPassword = await bcrypt.hash(password, 3);
     const activationLink = uuid.v4();
-
     const newUser = await UserModel.create({
       email,
-      hashedPassword,
+      password: hashedPassword,
       activationLink,
     });
+
     await mailService.sendActimationMail(email, activationLink);
     const userDto = new UserDto(newUser);
     const tokens = tokenService.generateTokens({ ...userDto });
