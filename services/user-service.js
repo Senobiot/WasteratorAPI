@@ -20,7 +20,7 @@ class UserService {
       activationLink,
     });
 
-    await mailService.sendActimationMail(email, activationLink);
+    await mailService.sendActimationMail(email, `${process.env.API_URL}/auth/activate/${activationLink}`);
     const userDto = new UserDto(newUser);
     const tokens = tokenService.generateTokens({ ...userDto });
     await tokenService.saveToken(userDto.id, tokens.refreshToken);
@@ -30,6 +30,16 @@ class UserService {
       user: userDto,
     };
   }
+
+  async activate(activationLink){
+    const existUser = await UserModel.findOne({activationLink});
+    if (!existUser) {
+      throw new Error("???");
+    }
+    existUser.hasActivated = true;
+    await existUser.save();
+  }
+
 }
 
 module.exports = new UserService();
