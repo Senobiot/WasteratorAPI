@@ -37,9 +37,7 @@ class UserService {
     if (!existUser) {
       throw ApiErrors.BadRequest(`Пользователь с email ${email} не найден`);
     }
-    console.log(password);
-    console.log(existUser.password);
-    console.log( bcrypt.compare(password, existUser.password));
+
     const isPasswordCorrect = await bcrypt.compare(password, existUser.password); {
       if(!isPasswordCorrect) {
         throw ApiErrors.BadRequest('Неверный пароль');
@@ -47,7 +45,7 @@ class UserService {
     }
     const userDto = new UserDto(existUser);
     const tokens = tokenService.generateTokens({ ...userDto });
-
+    console.log(userDto);
     await tokenService.saveToken(userDto.id, tokens.refreshToken);
 
     return {
@@ -61,6 +59,29 @@ class UserService {
     return token;
   }
 
+  async refresh(refreshToken) {
+    if (!refreshToken) {
+      throw ApiErrors.UnauthorizedError();
+    }
+
+    const validatedToken = tokenService.validateRefreshToken(refreshToken);
+    const storedToken = await tokenService.searchToken(refreshToken);
+
+    if(!validatedToken || !storedToken) {
+      throw ApiErrors.UnauthorizedError();
+    }
+
+    const updatedUser = await UserModel.findById(validatedToken.id);
+    const userDto = new UserDto(updatedUser);
+    const tokens = tokenService.generateTokens({ ...userDto });
+
+    await tokenService.saveToken(userDto.id, tokens.refreshToken);
+
+    return {
+      ...tokens,
+      user: userDto,
+    };
+  }
 
   async activate(activationLink){
     const existUser = await UserModel.findOne({activationLink});
