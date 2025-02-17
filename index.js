@@ -9,11 +9,12 @@ const corsOptions = {
     origin: "http://localhost:5173",
     credentials: true,
   };
-
+const errorMiddleware = require('./middlewares/error-middleware.js')
 app.use(express.json());
 app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use('/auth', router);
+app.use(errorMiddleware);
 
 const server = async (params) => {
     try {
