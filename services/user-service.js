@@ -32,6 +32,36 @@ class UserService {
     };
   }
 
+  async login(email, password){
+    const existUser = await UserModel.findOne({ email });
+    if (!existUser) {
+      throw ApiErrors.BadRequest(`Пользователь с email ${email} не найден`);
+    }
+    console.log(password);
+    console.log(existUser.password);
+    console.log( bcrypt.compare(password, existUser.password));
+    const isPasswordCorrect = await bcrypt.compare(password, existUser.password); {
+      if(!isPasswordCorrect) {
+        throw ApiErrors.BadRequest('Неверный пароль');
+      }
+    }
+    const userDto = new UserDto(existUser);
+    const tokens = tokenService.generateTokens({ ...userDto });
+
+    await tokenService.saveToken(userDto.id, tokens.refreshToken);
+
+    return {
+      ...tokens,
+      user: userDto,
+    };
+  }
+
+  async logout(refreshToken) {
+    const token = tokenService.removeToken(refreshToken);
+    return token;
+  }
+
+
   async activate(activationLink){
     const existUser = await UserModel.findOne({activationLink});
     if (!existUser) {
