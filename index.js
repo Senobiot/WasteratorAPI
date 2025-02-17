@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const router = require('./router/index')
 const app = express();
 const corsOptions = {
-    origin: "http://localhost:5173",
+    origin: process.env.REACT_APP_URL,
     credentials: true,
   };
 const errorMiddleware = require('./middlewares/error-middleware.js')

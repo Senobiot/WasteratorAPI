@@ -45,7 +45,6 @@ class UserService {
     }
     const userDto = new UserDto(existUser);
     const tokens = tokenService.generateTokens({ ...userDto });
-    console.log(userDto);
     await tokenService.saveToken(userDto.id, tokens.refreshToken);
 
     return {
@@ -90,6 +89,11 @@ class UserService {
     }
     existUser.hasActivated = true;
     await existUser.save();
+  }
+
+  async getAllUsers(){
+    const users = await UserModel.find();
+    return users;
   }
 
 }
