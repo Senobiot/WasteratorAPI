@@ -10,32 +10,34 @@ const requestSettings = {
   name: "",
   detailsUrl: "",
 
-  set getListByName(name = "") {
+  getListByName(name = "") {
     this.name = name;
 
     return (
-      `${this.URL}${this.REQUEST.search}` +
+      `${this.url}${this.request.search}` +
       `?api_key=${process.env.GAME_API_KEY}` +
-      `&format=${this.FORMAT}` +
+      `&format=${this.format}` +
       `&resources=${this.request.game}` +
       `&query=${this.name}`
     );
   },
 
-  set getGameDetails(url = "") {
+  getGameDetails(url = "") {
     this.detailsUrl = url;
 
-    return `${this.detailsUrl}?api_key=${process.env.GAME_API_KEY}&format=${this.FORMAT}`;
+    return `${this.detailsUrl}?api_key=${process.env.GAME_API_KEY}&format=${this.format}`;
   },
 };
 
 class GamesController {
-  async getListByName(req, res, next) {
-    try {
-      const response = await fetch(requestSettings.getListByName(req.body));
-      const data = await response.json(data);
-      const searchList = await gameService.saveSearchList(data);
+  async searchGame(req, res, next) {
+      const request = req.query.name;
 
+    try {
+      const response = await fetch(requestSettings.getListByName(request));
+      const data = await response.json();
+      const searchList = await gameService.saveSearchList(request, data);
+      console.log(searchList);
       return res.json(searchList);
     } catch (error) {
       next(error);
