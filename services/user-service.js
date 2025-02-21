@@ -7,16 +7,17 @@ const UserDto = require("../dtos/user-dto");
 const ApiErrors = require('../exceptions/exceptions');
 
 class UserService {
-  async registartion(email, password) {
+  async registartion(props) {
+    const { email } = props;
     const existUser = await UserModel.findOne({ email });
     if (existUser) {
       throw ApiErrors.BadRequest(`Пользователь с адресом ${email} уже есть`);
     }
-
+    const { password } = props;
     const hashedPassword = await bcrypt.hash(password, 3);
     const activationLink = uuid.v4();
     const newUser = await UserModel.create({
-      email,
+      ...props,
       password: hashedPassword,
       activationLink,
     });
@@ -73,7 +74,7 @@ class UserService {
     const updatedUser = await UserModel.findById(validatedToken.id);
     const userDto = new UserDto(updatedUser);
     const tokens = tokenService.generateTokens({ ...userDto });
-
+    console.log(tokens);
     await tokenService.saveToken(userDto.id, tokens.refreshToken);
 
     return {
