@@ -2,6 +2,7 @@ const ApiErrors = require("../exceptions/exceptions");
 const tokenService = require("../services/token-service");
 
 module.exports = function (req, res, next) {
+  console.log('Auth middleware');
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
@@ -18,7 +19,7 @@ module.exports = function (req, res, next) {
       return next(ApiErrors.UnauthorizedError());
     }
 
-    req.user = userData;
+    req.body.user = userData;
     next();
   } catch (error) {
     return next(ApiErrors.UnauthorizedError());
