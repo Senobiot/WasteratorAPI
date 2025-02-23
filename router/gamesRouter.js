@@ -4,6 +4,6 @@ const authMiddleware = require('../middlewares/auth-middleware.js')
 const gamesController = require('../controllers/games-controller.js');
 
 router.get('/searchGame', authMiddleware, gamesController.searchGame);
-router.post('/getGameDetails', authMiddleware, gamesController.getDetails);
+router.get('/getGameDetails', authMiddleware, gamesController.getDetails);
 
 module.exports = router;

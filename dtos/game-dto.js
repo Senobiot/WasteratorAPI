@@ -1,29 +1,28 @@
-export default class GameDto {
-    constructor(data = {}) {
-      this.actors = data.persons;
-      this.alternativeName = data.alternativeName;
-      this.backgroundImageUrl = data.backdrop?.url;
-      this.budget = data.budget;
-      this.countries = data.countries?.map( e => e.name);
-      this.description = data.description;
-      this.fees = Object.entries(data.fees || {}).filter( e => e[1]?.value);
-      this.genres = data.genres?.map(e => e.name);
-      this.id = data.id;
-      this.isInCollection = data.isInCollection;
-      this.isSeries = data.isSeries;
-      this.length = data.movieLength;
-      this.logoUrl = data.logo?.url;
-      this.posterUrl = data.poster?.url;
-      this.rating = Object.entries(data.rating || {}).filter(e => e[1]);
-      this.ratingMpaa = data.ratingMpaa;
-      this.seriesCount = data.seasonsInfo?.find( e => e.number === 0)?.episodesCount;
-      this.seriesLength = data.seriesLength;
-      this.title = data.name;
-      this.top250 = data.top250;
-      this.trailers = data.videos?.trailers?.map( e => e.url);
-      this.type = data.type;
-      this.votes = Object.entries(data.votes || {}).filter(e => e[1]);
-      this.year = data.year;
-    }
-  }  
-  
+module.exports = class GameDto {
+  constructor(data = {}) {
+    this.developers = data.developers?.map((dev) => ({
+      name: dev.name,
+      url: dev.api_detail_url,
+    }));
+    this.description = data.deck;
+    this.descriptionHtml = data.description;
+    this.detailsUrl = data.api_detail_url;
+    this.genres = data.genres?.map((genre) => genre.name);
+    this.id = data.id;
+    this.imageUrl = data.image?.original_url;
+    this.inCollection = false;
+    this.name = data.name;
+    this.platforms = data.platforms?.map((platform) => ({
+      name: platform.name,
+      url: platform.api_detail_url,
+    }));
+    this.publishers = data.publishers?.map((pub) => ({
+      name: pub.name,
+      url: pub.api_detail_url
+    }));
+    this.ratingMpaa = data.original_game_rating?.map((rating) => rating.name);
+    this.release =
+      data.original_release_date || data.date_added || data.date_last_updated;
+    this.screenshots = data.images?.map((img) => img.original);
+  }
+};
