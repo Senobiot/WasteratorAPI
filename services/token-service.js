@@ -38,8 +38,6 @@ class TokenService {
         token,
         process.env.JWT_ACCESS_TOKEN_SECRET
       );
-      console.log('tokenService');
-      console.log(verifiedToken);
 
       return verifiedToken;
     } catch (error) {
