@@ -2,7 +2,6 @@ const ApiErrors = require("../exceptions/exceptions");
 const tokenService = require("../services/token-service");
 
 module.exports = function (req, res, next) {
-  console.log('Auth middleware');
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader) {

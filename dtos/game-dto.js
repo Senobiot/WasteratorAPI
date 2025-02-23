@@ -1,4 +1,4 @@
-module.exports = class GameDto {
+module.exports = class GameDtoDb {
   constructor(data = {}) {
     this.developers = data.developers?.map((dev) => ({
       name: dev.name,

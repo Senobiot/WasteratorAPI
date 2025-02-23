@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const { Schema, model } = mongoose;
 
 const searchItemSchema = new Schema({
-  detailUrl: { type: String },
+  detailsUrl: { type: String },
   release: { type: String },
   name: { type: String },
   id: { type: Number },

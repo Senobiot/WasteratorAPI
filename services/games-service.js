@@ -7,18 +7,60 @@ const gamesSearchItemDto = require("../dtos/gamesSearchItem-dto");
 const GameDto = require("../dtos/game-dto");
 
 class GameService {
-  async saveSearchList(searchQuery, apiResponse) {
+  async markInCollectionItems(userId, searchResult) {
+    const list = (
+      await Games.find({ inCollectionUsers: userId }).select("id")
+    ).map((e) => e.id);
+
+    const result = searchResult.list.map((e) => {
+      if (list.includes(e.id)) {
+        e.inCollection = true;
+      }
+
+      return e;
+    });
+
+    return result;
+  }
+
+  async checkStoredSearchList(searchQuery, userId) {
     const storedResult = await GamesSearchList.findOne({ searchQuery });
 
-    if (!storedResult) {
-      const { results: rawList } = apiResponse;
-      const list = rawList.map((item) => new gamesSearchItemDto(item));
+    if (storedResult) {
+      const result = await this.markInCollectionItems(userId, storedResult);
 
-      await GamesSearchList.create({ searchQuery, list });
-      return list;
+      return result;
     }
 
-    return storedResult.list;
+    return storedResult;
+  }
+
+  async saveSearchList(searchQuery, apiResponse, userId) {
+    const { results: rawList } = apiResponse;
+    const list = rawList.map((item) => new gamesSearchItemDto(item));
+
+    const newSearchList = await GamesSearchList.create({ searchQuery, list });
+    const result = await this.markInCollectionItems(userId, newSearchList);
+
+    return result;
+  }
+
+  async checkStoredGame(detailsUrl, userId) {
+    const storedResult = await Games.findOne({ detailsUrl })
+      .populate("developers")
+      .populate("publishers")
+      .populate("platforms")
+      .lean();
+    if (storedResult) {
+      const isInCollection = storedResult.inCollectionUsers.find(
+        (e) => e.toString() === userId
+      );
+      const { inCollectionUsers, _id, ...result } = storedResult;
+      result.inCollection = Boolean(isInCollection);
+
+      return result;
+    }
+    return storedResult;
   }
 
   async saveGameDetails(apiResponse) {
@@ -26,54 +68,44 @@ class GameService {
     const game = new GameDto(rawList);
     const { id, developers, publishers, platforms } = game;
 
-    const storedResult = await Games.findOne({ id }).populate('developers').populate('publishers').populate('platforms');
+    const insertToCollection = async (array, collection) => {
+      if (!array || !array.length) {
+        return [];
+      }
 
-    if (!storedResult) {
-      const devObjIds = await Promise.all(
-        developers.map(async (dev) => {
-          const existingDev = await Developers.findOne({ url: dev?.url });
-          if (existingDev) {
-            return existingDev._id;
+      const result = await Promise.all(
+        array.map(async (e) => {
+          const existItem = await collection.findOne({ url: e.url });
+          if (existItem) {
+            return existItem._id;
           }
-          const newDev = await Developers.create(dev);
-          return newDev._id;
+          const newItem = await collection.create(e);
+          return newItem._id;
         })
       );
 
-      const pubObjIds = await Promise.all(
-        publishers.map(async (pub) => {
-          const existingPub = await Publishers.findOne({ url: pub?.url });
-          if (existingPub) {
-            return existingPub._id;
-          }
-          const newPub = await Publishers.create(pub);
-          return newPub._id;
-        })
-      );
-
-      const platObjIds = await Promise.all(
-        platforms.map(async (plat) => {
-          const existingPlat = await Platforms.findOne({ url: plat?.url });
-          if (existingPlat) {
-            return existingPlat._id;
-          }
-          const newPlat = await Platforms.create(plat);
-          return newPlat._id;
-        })
-      );
-
-      const newGame = new Games({
-        ...game,
-        developers: devObjIds,
-        publishers: pubObjIds,
-        platforms: platObjIds,
-      });
-
-      await newGame.save();
-      return await Games.findOne({ id }).populate('developers').populate('publishers').populate('platforms');;
+      return result;
     }
 
-    return storedResult;
+    const devObjIds = await insertToCollection(developers, Developers); 
+    const pubObjIds = await insertToCollection(publishers, Publishers); 
+    const platObjIds = await insertToCollection(platforms, Platforms); 
+
+    const newGame = new Games({
+      ...game,
+      developers: devObjIds,
+      publishers: pubObjIds,
+      platforms: platObjIds,
+    });
+
+    await newGame.save();
+    const { inCollectionUsers, _id, ...result } = await Games.findOne({ id })
+      .populate("developers")
+      .populate("publishers")
+      .populate("platforms")
+      .lean();
+
+    return result;
   }
 }
 
