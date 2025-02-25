@@ -2,6 +2,7 @@ const gameService = require("../services/games-service");
 
 const requestSettings = {
   url: "https://www.giantbomb.com/api/",
+  urlRawg: "https://api.rawg.io/api/games",
   format: "json",
   request: {
     game: "game",
@@ -22,6 +23,10 @@ const requestSettings = {
     );
   },
 
+  getTopList() {
+    return `${this.urlRawg}` + `?key=${process.env.GAME_API_RAWG_KEY}&page=2`;
+  },
+
   getGameDetails(url = "") {
     this.detailsUrl = url;
 
@@ -31,11 +36,14 @@ const requestSettings = {
 
 class GamesController {
   async searchGame(req, res, next) {
-      const request = req.query.name;
-      const userId = req.body.user.id;
+    const request = req.query.name;
+    const userId = req.body.user.id;
 
     try {
-      const storedList = await gameService.checkStoredSearchList(request, userId);
+      const storedList = await gameService.checkStoredSearchList(
+        request,
+        userId
+      );
 
       if (storedList) {
         return res.json(storedList);
@@ -43,8 +51,12 @@ class GamesController {
 
       const response = await fetch(requestSettings.getListByName(request));
       const data = await response.json();
-      const searchList = await gameService.saveSearchList(request, data, userId);
-  
+      const searchList = await gameService.saveSearchList(
+        request,
+        data,
+        userId
+      );
+
       return res.json(searchList);
     } catch (error) {
       console.log(error);
@@ -68,6 +80,26 @@ class GamesController {
       const gameDetails = await gameService.saveGameDetails(data);
 
       return res.json(gameDetails);
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
+
+  async getAllGames(req, res, next) {
+    const page = req.query.page || 1;
+    const request = `${requestSettings.urlRawg}?key=${process.env.GAME_API_RAWG_KEY}&page=${page}`;
+
+    try {
+      const storedPage = await gameService.checkStoredAllGamesListPage(page);
+      if (storedPage) {
+        return res.json(storedPage.list);
+      }
+
+      const response = await fetch(request);
+      const data = await response.json();
+      const allGamesListPage = await gameService.saveAllGamesListPage(page, data);
+      return res.json(allGamesListPage.list);
     } catch (error) {
       console.log(error);
       next(error);
