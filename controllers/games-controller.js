@@ -24,13 +24,17 @@ const requestSettings = {
   },
 
   getTopList() {
-    return `${this.urlRawg}` + `?key=${process.env.GAME_API_RAWG_KEY}&page=2`;
+    return `${this.urlRawg}?key=${process.env.GAME_API_RAWG_KEY}&page=2`;
   },
 
   getGameDetails(url = "") {
     this.detailsUrl = url;
 
     return `${this.detailsUrl}?api_key=${process.env.GAME_API_KEY}&format=${this.format}`;
+  },
+
+  getGameDetailsById(id) {
+    return `${this.urlRawg}/${id}?key=${process.env.GAME_API_RAWG_KEY}&page=2`;
   },
 };
 
@@ -84,6 +88,32 @@ class GamesController {
       console.log(error);
       next(error);
     }
+  }
+
+  async getDetailsById(req, res, next) {
+    const userId = req.body.user.id;
+    const cardId = req.query.id;
+    console.log(cardId);
+
+    try {
+      // const storedGame = await gameService.checkStoredGame(url, userId);
+
+      // if (storedGame) {
+      //   return res.json(storedGame);
+      // }
+
+      const response = await fetch(requestSettings.getGameDetailsById(cardId));
+      const data = await response.json();
+      console.log(data);
+      // const gameDetails = await gameService.saveGameDetails(data);
+
+      return res.json(data);
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+
+
   }
 
   async getAllGames(req, res, next) {
