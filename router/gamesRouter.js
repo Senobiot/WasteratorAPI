@@ -5,7 +5,7 @@ const gamesController = require('../controllers/games-controller.js');
 
 router.get('/searchGame', authMiddleware, gamesController.searchGame);
 router.get('/getGameDetails', authMiddleware, gamesController.getDetails);
-router.get('/getGameDetailsById', authMiddleware, gamesController.getDetailsById);
+router.post('/getGameDetailsById', authMiddleware, gamesController.getDetailsById);
 router.get('/getTopGames', gamesController.getAllGames);
 
 module.exports = router;

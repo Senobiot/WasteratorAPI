@@ -92,28 +92,26 @@ class GamesController {
 
   async getDetailsById(req, res, next) {
     const userId = req.body.user.id;
-    const cardId = req.query.id;
-    console.log(cardId);
+    const { gameId } = req.body;
+    console.log(gameId);
 
     try {
-      // const storedGame = await gameService.checkStoredGame(url, userId);
+      const storedGame = await gameService.checkStoredGameDetails(gameId, userId);
 
-      // if (storedGame) {
-      //   return res.json(storedGame);
-      // }
+      if (storedGame) {
+        console.log('stored');
+        return res.json(storedGame);
+      }
 
-      const response = await fetch(requestSettings.getGameDetailsById(cardId));
+      const response = await fetch(requestSettings.getGameDetailsById(gameId));
       const data = await response.json();
-      console.log(data);
-      // const gameDetails = await gameService.saveGameDetails(data);
+      const gameDetails = await gameService.saveGameDetails(data);
 
-      return res.json(data);
+      return res.json(gameDetails);
     } catch (error) {
       console.log(error);
       next(error);
     }
-
-
   }
 
   async getAllGames(req, res, next) {

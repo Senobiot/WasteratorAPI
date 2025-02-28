@@ -17,7 +17,7 @@ const GameSchema = new Schema(
     id: { type: Number },
     imageUrl: { type: String },
     inCollection: { type: Boolean, default: false },
-    name: { type: String },
+    name: { type: String, unique: true },
     platforms: [{ type: Schema.Types.ObjectId, ref: "Platform" }],
     publishers: [{ type: Schema.Types.ObjectId, ref: "Publisher" }],
     ratingMpaa: [String],
