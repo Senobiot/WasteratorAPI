@@ -1,6 +1,7 @@
 const MoviesCollection = require("../models/movie-model");
 const ActorsCollection = require("../models/actor-model");
 const Games = require("../models/game-model");
+const Users = require("../models/users-model");
 const ApiErrors = require("../exceptions/exceptions");
 
 class CollectionService {
@@ -10,11 +11,16 @@ class CollectionService {
     const { id: userId } = user;
 
     if (data.type === "game") {
+      // TODO refactor it completely
       const collectionGame = await Games.findOne({ id })
         .populate("developers")
         .populate("publishers")
         .populate("platforms");
       collectionGame.inCollectionUsers.push(userId);
+      const user = await Users.findById(userId);
+      user.gamesCollection.push(collectionGame._id);
+      user.gamesCollectionIds.push(id);
+      await user.save();
       await collectionGame.save();
       collectionGame.inCollection = true;
 
@@ -68,10 +74,26 @@ class CollectionService {
       collectionGame.inCollectionUsers =
         collectionGame.inCollectionUsers.filter((e) => e.toString() !== userId);
       collectionGame.inCollection = false;
+      const user = await Users.findById(userId);
+
+      user.gamesCollection = user.gamesCollection.filter((e) => e.toString() !== collectionGame._id.toString());
+      user.gamesCollectionIds = user.gamesCollectionIds.filter((e) => e !== id);
+
       await collectionGame.save();
+      await user.save();
 
       return collectionGame;
     }
+  }
+
+  async getCollection(props) {
+    const { user, data } = props;
+
+    const { id: userId } = user;
+    
+    const userCollection = await Users.findById(userId);
+    const games = await userCollection.populate({ path: "gamesCollection", select: "-inCollectionUsers -_id"});
+    return games.gamesCollection;
   }
 }
 

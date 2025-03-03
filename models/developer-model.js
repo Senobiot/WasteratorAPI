@@ -3,7 +3,7 @@ const { Schema, model } = mongoose;
 
 const DeveloperSchema = new Schema({
   name: { type: String },
-  url: { type: String, unique: true },
+  id: { type: Number, unique: true },
 });
 
 module.exports = model("Developer", DeveloperSchema);

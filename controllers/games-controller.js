@@ -24,13 +24,17 @@ const requestSettings = {
   },
 
   getTopList() {
-    return `${this.urlRawg}` + `?key=${process.env.GAME_API_RAWG_KEY}&page=2`;
+    return `${this.urlRawg}?key=${process.env.GAME_API_RAWG_KEY}&page=2`;
   },
 
   getGameDetails(url = "") {
     this.detailsUrl = url;
 
     return `${this.detailsUrl}?api_key=${process.env.GAME_API_KEY}&format=${this.format}`;
+  },
+
+  getGameDetailsById(id) {
+    return `${this.urlRawg}/${id}?key=${process.env.GAME_API_RAWG_KEY}&page=2`;
   },
 };
 
@@ -86,14 +90,37 @@ class GamesController {
     }
   }
 
+  async getDetailsById(req, res, next) {
+    const userId = req.body.user.id;
+    const { gameId } = req.body;
+
+    try {
+      const storedGame = await gameService.checkStoredGameDetails(gameId, userId);
+
+      if (storedGame) {
+        return res.json(storedGame);
+      }
+
+      const response = await fetch(requestSettings.getGameDetailsById(gameId));
+      const data = await response.json();
+      const gameDetails = await gameService.saveGameDetails(data);
+      
+      return res.json(gameDetails);
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
+
   async getAllGames(req, res, next) {
+    debugger;
     const page = req.query.page || 1;
     const request = `${requestSettings.urlRawg}?key=${process.env.GAME_API_RAWG_KEY}&page=${page}`;
 
     try {
       const storedPage = await gameService.checkStoredAllGamesListPage(page);
       if (storedPage) {
-        return res.json(storedPage.list);
+        return res.json(storedPage);
       }
 
       const response = await fetch(request);

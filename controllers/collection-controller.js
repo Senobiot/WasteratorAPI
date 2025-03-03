@@ -20,6 +20,16 @@ class CollectionController {
       next(error);
     }
   }
+
+  async getCollection(req, res, next) {
+    try {
+      const collection = await collectionService.getCollection(req.body);
+      return res.json(collection);
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
 }
 
 module.exports = new CollectionController();

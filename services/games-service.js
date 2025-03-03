@@ -4,9 +4,12 @@ const Publishers = require("../models/publisher-model");
 const Platforms = require("../models/platform-model");
 const Games = require("../models/game-model");
 const AllGamesList = require("../models/all-games-model");
+const Users = require("../models/users-model");
 const gamesSearchItemDto = require("../dtos/gamesSearchItem-dto");
 const GameDto = require("../dtos/game-dto");
+const GameDto2 = require("../dtos/game-dto2");
 const AllGamesListDto = require("../dtos/all-games-dto");
+const dbFileds = "-_id-__v"
 
 class GameService {
   async markInCollectionItems(userId, searchResult) {
@@ -41,8 +44,23 @@ class GameService {
   }
 
   async checkStoredGame(detailsUrl, userId) {
-    const storedResult = await await this.populateGameDetails(
-      Games.findOne({ detailsUrl })
+    // //GameBomb API
+    // const storedResult = await await this.populateGameDetails(
+    //   Games.findOne({ detailsUrl })
+    // );
+    // if (storedResult) {
+    //   const isInCollection = storedResult.inCollectionUsers.some(
+    //     (e) => e.toString() === userId
+    //   );
+    //   const { inCollectionUsers, _id, ...result } = storedResult;
+    //   return { ...result, inCollection: isInCollection };
+    // }
+    // return storedResult;
+  }
+
+  async checkStoredGameDetails(id, userId) {
+    const storedResult = await this.populateGameDetails(
+      Games.findOne({ id })
     );
     if (storedResult) {
       const isInCollection = storedResult.inCollectionUsers.some(
@@ -51,11 +69,12 @@ class GameService {
       const { inCollectionUsers, _id, ...result } = storedResult;
       return { ...result, inCollection: isInCollection };
     }
+
     return storedResult;
   }
 
-  async saveGameDetails(apiResponse) {
-    const game = new GameDto(apiResponse.results);
+  async saveGameDetails(apiResponse) { 
+    const game = new GameDto2(apiResponse);
     const { id, developers, publishers, platforms } = game;
 
     const devObjIds = await this.insertToCollection(developers, Developers);
@@ -69,6 +88,7 @@ class GameService {
       platforms: platObjIds,
     });
 
+
     await newGame.save();
     const { inCollectionUsers, _id, ...result } =
       await this.populateGameDetails(Games.findOne({ id }));
@@ -77,7 +97,8 @@ class GameService {
   }
 
   async checkStoredAllGamesListPage(page) {
-    return AllGamesList.findOne({ page }).select("list -_id");
+    const storedPage = await AllGamesList.findOne({ page }).select(dbFileds);
+    return storedPage.list;
   }
 
   async saveAllGamesListPage(page, data) {
@@ -86,10 +107,11 @@ class GameService {
   }
 
   async insertToCollection(array, collection) {
+    console.log(array);
     if (!array || !array.length) return [];
     return Promise.all(
       array.map(async (e) => {
-        const existItem = await collection.findOne({ url: e.url });
+        const existItem = await collection.findOne({ id: e?.id });
         return existItem ? existItem._id : (await collection.create(e))._id;
       })
     );
@@ -97,9 +119,9 @@ class GameService {
 
   async populateGameDetails(query) {
     return query
-      .populate("developers")
-      .populate("publishers")
-      .populate("platforms")
+      .populate({ path: "developers", select: dbFileds})
+      .populate({ path: "publishers", select: dbFileds})
+      .populate({ path: "platforms", select: dbFileds})
       .lean();
   }
 }
