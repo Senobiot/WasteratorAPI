@@ -113,12 +113,13 @@ class GamesController {
   }
 
   async getAllGames(req, res, next) {
-    debugger;
     const page = req.query.page || 1;
+    const userId = req.body.user.id;
+
     const request = `${requestSettings.urlRawg}?key=${process.env.GAME_API_RAWG_KEY}&page=${page}`;
 
     try {
-      const storedPage = await gameService.checkStoredAllGamesListPage(page);
+      const storedPage = await gameService.checkStoredAllGamesListPage(page, userId);
       if (storedPage) {
         return res.json(storedPage);
       }

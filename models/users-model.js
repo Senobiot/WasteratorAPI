@@ -10,9 +10,22 @@ const UserSchema = new Schema({
   password: { type: String, required: true },
   hasActivated: { type: Boolean, default: false },
   activationLink: { type: String },
-  gamesCollection: [{ type: Schema.Types.ObjectId, ref: "Game" }],
-  gamesCollectionIds: [Number],
-  filmsCollection: [{ type: Schema.Types.ObjectId, ref: "Movie" }],
+  gamesCollection: {
+    type: [{ type: Schema.Types.ObjectId, ref: "Game" }],
+    default: []
+  },
+  gamesCollectionIds: {
+    type: [Number],
+    default: []
+  },
+  filmsCollection: {
+    type: [{ type: Schema.Types.ObjectId, ref: "Movie" }],
+    default: []
+  },
+  filmsCollectionIds: {
+    type: [Number],
+    default: []
+  }
 });
 
 module.exports = model("User", UserSchema);

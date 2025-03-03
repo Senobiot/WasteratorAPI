@@ -96,9 +96,22 @@ class GameService {
     return result;
   }
 
-  async checkStoredAllGamesListPage(page) {
+  async checkStoredAllGamesListPage(page, userId) {
     const storedPage = await AllGamesList.findOne({ page }).select(dbFileds);
-    return storedPage.list;
+
+    if (userId && storedPage) {
+      console.log(storedPage);
+      const userCollection = await Users.findById(userId);
+      const result = storedPage.list?.map(e=> {
+        if (userCollection.gamesCollectionIds.includes(e.id)) {
+          e.inCollection = true;
+        }
+        return e;
+      })
+
+     return result; 
+    }
+    return storedPage?.list;
   }
 
   async saveAllGamesListPage(page, data) {

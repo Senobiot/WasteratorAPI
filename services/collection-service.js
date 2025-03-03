@@ -20,7 +20,10 @@ class CollectionService {
       const user = await Users.findById(userId);
       user.gamesCollection.push(collectionGame._id);
       user.gamesCollectionIds.push(id);
+      console.log(user.gamesCollection);
+
       await user.save();
+      console.log("save---");
       await collectionGame.save();
       collectionGame.inCollection = true;
 
@@ -76,7 +79,9 @@ class CollectionService {
       collectionGame.inCollection = false;
       const user = await Users.findById(userId);
 
-      user.gamesCollection = user.gamesCollection.filter((e) => e.toString() !== collectionGame._id.toString());
+      user.gamesCollection = user.gamesCollection.filter(
+        (e) => e.toString() !== collectionGame._id.toString()
+      );
       user.gamesCollectionIds = user.gamesCollectionIds.filter((e) => e !== id);
 
       await collectionGame.save();
@@ -90,9 +95,12 @@ class CollectionService {
     const { user, data } = props;
 
     const { id: userId } = user;
-    
+
     const userCollection = await Users.findById(userId);
-    const games = await userCollection.populate({ path: "gamesCollection", select: "-inCollectionUsers -_id"});
+    const games = await userCollection.populate({
+      path: "gamesCollection",
+      select: "-inCollectionUsers -_id",
+    });
     return games.gamesCollection;
   }
 }

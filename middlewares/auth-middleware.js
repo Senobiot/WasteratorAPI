@@ -9,7 +9,7 @@ module.exports = function (req, res, next) {
     }
 
     const accessToken = authHeader.split(" ")[1];
-    if (!accessToken) {
+    if (!accessToken) {   
       return next(ApiErrors.UnauthorizedError());
     }
 
