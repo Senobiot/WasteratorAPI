@@ -1,4 +1,4 @@
-# _Auth server_
+# _API/AUTH server_
 
-> Express + Mongoose auth server\
-> for [React app](https://github.com/Senobiot/vite-api)
+> Express / Mongoose auth + db server\
+> for [React app](https://github.com/Senobiot/Wasteratori)
