@@ -4,6 +4,7 @@ const Publishers = require("../models/publisher-model");
 const Platforms = require("../models/platform-model");
 const Games = require("../models/game-model");
 const AllGamesList = require("../models/all-games-model");
+const Users = require("../models/users-model");
 const gamesSearchItemDto = require("../dtos/gamesSearchItem-dto");
 const GameDto = require("../dtos/game-dto");
 const GameDto2 = require("../dtos/game-dto2");
@@ -43,6 +44,7 @@ class GameService {
   }
 
   async checkStoredGame(detailsUrl, userId) {
+    // //GameBomb API
     // const storedResult = await await this.populateGameDetails(
     //   Games.findOne({ detailsUrl })
     // );
@@ -95,7 +97,8 @@ class GameService {
   }
 
   async checkStoredAllGamesListPage(page) {
-    return AllGamesList.findOne({ page }).select(dbFileds);
+    const storedPage = await AllGamesList.findOne({ page }).select(dbFileds);
+    return storedPage.list;
   }
 
   async saveAllGamesListPage(page, data) {

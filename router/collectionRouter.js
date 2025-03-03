@@ -5,5 +5,6 @@ const collectionController = require('../controllers/collection-controller.js');
 
 router.post('/addToCollection', authMiddleware, collectionController.addToCollection);
 router.post('/deleteFromCollection', authMiddleware, collectionController.deleteFromCollection);
+router.get('/getCollection', authMiddleware, collectionController.getCollection);
 
 module.exports = router;
