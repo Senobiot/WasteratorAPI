@@ -17,10 +17,11 @@ class CollectionService {
         .populate("publishers")
         .populate("platforms");
       collectionGame.inCollectionUsers.push(userId);
+
       const user = await Users.findById(userId);
-      user.gamesCollection.push(collectionGame._id);
-      user.gamesCollectionIds.push(id);
-      console.log(user.gamesCollection);
+
+      user.gamesCollection.list.push({ game: collectionGame._id });
+      user.gamesCollection.ids.push(id);
 
       await user.save();
       console.log("save---");
@@ -79,10 +80,13 @@ class CollectionService {
       collectionGame.inCollection = false;
       const user = await Users.findById(userId);
 
-      user.gamesCollection = user.gamesCollection.filter(
-        (e) => e.toString() !== collectionGame._id.toString()
+      user.gamesCollection.list = user.gamesCollection.list.filter(
+        (e) => e.game.toString() !== collectionGame._id.toString()
       );
-      user.gamesCollectionIds = user.gamesCollectionIds.filter((e) => e !== id);
+      console.log(user.gamesCollection);
+      user.gamesCollection.ids = user.gamesCollection.ids.filter(
+        (e) => e !== id
+      );
 
       await collectionGame.save();
       await user.save();
@@ -92,16 +96,50 @@ class CollectionService {
   }
 
   async getCollection(props) {
-    const { user, data } = props;
+    const {
+      user: { id: userId },
+    } = props;
+    const userCollection = await Users.findById(userId)
+      .populate({
+        path: "gamesCollection.list.game",
+        select: "-inCollectionUsers -_id",
+      })
+      .lean();
+    const result = userCollection.gamesCollection.list.map((e) => ({
+      ...e.game,
+      time: e.time,
+    }));
 
-    const { id: userId } = user;
+    return result;
+  }
 
-    const userCollection = await Users.findById(userId);
-    const games = await userCollection.populate({
-      path: "gamesCollection",
-      select: "-inCollectionUsers -_id",
+  async updateCollectableTime({
+    user: { id: userId },
+    type,
+    playedTime,
+    id: gameId,
+  }) {
+
+    if (type === "game") {
+      return await this.setGameTime(userId, gameId, playedTime);
+    }
+  }
+
+  async setGameTime(userId, gameId, playedTime) {
+    const user = await Users.findById(userId).populate({
+      path: "gamesCollection.list.game",
+      select: "id",
     });
-    return games.gamesCollection;
+    const game = user.gamesCollection.list.find(
+      (item) => item.game?.id === +gameId
+    );
+
+    if (playedTime) {
+      game.time = playedTime;
+      await user.save();
+    }
+
+    return game?.time;
   }
 }
 

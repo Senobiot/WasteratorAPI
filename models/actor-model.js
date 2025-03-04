@@ -9,6 +9,6 @@ const ActorSchema = new Schema({
   profession: { type: String },
   photo: { type: String },
   description: { type: String },
-});
+},{ versionKey: false });
 
 module.exports = model("Actor", ActorSchema);

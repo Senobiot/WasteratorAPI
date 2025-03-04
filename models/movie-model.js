@@ -30,6 +30,6 @@ const MovieSchema = new Schema({
   type: { type: String, required: true },
   votes: { type: Object },
   year: { type: Number },
-});
+},{ versionKey: false });
 
 module.exports = mongoose.model("Movie", MovieSchema);

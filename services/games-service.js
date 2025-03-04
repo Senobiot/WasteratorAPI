@@ -9,7 +9,8 @@ const gamesSearchItemDto = require("../dtos/gamesSearchItem-dto");
 const GameDto = require("../dtos/game-dto");
 const GameDto2 = require("../dtos/game-dto2");
 const AllGamesListDto = require("../dtos/all-games-dto");
-const dbFileds = "-_id-__v"
+const collectionService = require("../services/collection-service");
+const dbFileds = "-_id-__v";
 
 class GameService {
   async markInCollectionItems(userId, searchResult) {
@@ -59,21 +60,25 @@ class GameService {
   }
 
   async checkStoredGameDetails(id, userId) {
-    const storedResult = await this.populateGameDetails(
-      Games.findOne({ id })
-    );
+    const storedResult = await this.populateGameDetails(Games.findOne({ id }));
     if (storedResult) {
       const isInCollection = storedResult.inCollectionUsers.some(
         (e) => e.toString() === userId
       );
+
+      const time = await collectionService.setGameTime(userId, id);
+
       const { inCollectionUsers, _id, ...result } = storedResult;
+      if (time) {
+        result.playedTime = time;
+      }
       return { ...result, inCollection: isInCollection };
     }
 
     return storedResult;
   }
 
-  async saveGameDetails(apiResponse) { 
+  async saveGameDetails(apiResponse) {
     const game = new GameDto2(apiResponse);
     const { id, developers, publishers, platforms } = game;
 
@@ -88,7 +93,6 @@ class GameService {
       platforms: platObjIds,
     });
 
-
     await newGame.save();
     const { inCollectionUsers, _id, ...result } =
       await this.populateGameDetails(Games.findOne({ id }));
@@ -100,16 +104,15 @@ class GameService {
     const storedPage = await AllGamesList.findOne({ page }).select(dbFileds);
 
     if (userId && storedPage) {
-      console.log(storedPage);
       const userCollection = await Users.findById(userId);
-      const result = storedPage.list?.map(e=> {
-        if (userCollection.gamesCollectionIds.includes(e.id)) {
+      const result = storedPage.list?.map((e) => {
+        if (userCollection.gamesCollection.ids.includes(e.id)) {
           e.inCollection = true;
         }
         return e;
-      })
+      });
 
-     return result; 
+      return result;
     }
     return storedPage?.list;
   }
@@ -132,9 +135,9 @@ class GameService {
 
   async populateGameDetails(query) {
     return query
-      .populate({ path: "developers", select: dbFileds})
-      .populate({ path: "publishers", select: dbFileds})
-      .populate({ path: "platforms", select: dbFileds})
+      .populate({ path: "developers", select: dbFileds })
+      .populate({ path: "publishers", select: dbFileds })
+      .populate({ path: "platforms", select: dbFileds })
       .lean();
   }
 }
