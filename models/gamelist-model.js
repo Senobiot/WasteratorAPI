@@ -8,11 +8,11 @@ const searchItemSchema = new Schema({
   id: { type: Number },
   logoUrl: { type: String },
   inCollection: { type: Boolean },
-});
+},{ versionKey: false });
 
 const GamesSearchListSchema = new Schema({
   searchQuery: { type: String },
   list: [searchItemSchema],
-});
+},{ versionKey: false });
 
 module.exports = mongoose.model("GamesSearchList", GamesSearchListSchema);

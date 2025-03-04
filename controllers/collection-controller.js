@@ -21,6 +21,16 @@ class CollectionController {
     }
   }
 
+  async updateCollectableTime(req, res, next) {
+    try {
+      const collectable = await collectionService.updateCollectableTime(req.body);
+      return res.json(collectable);
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
+
   async getCollection(req, res, next) {
     try {
       const collection = await collectionService.getCollection(req.body);
