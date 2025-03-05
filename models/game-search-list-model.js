@@ -15,7 +15,6 @@ const gameItemSchema = new Schema(
     ratingTop: { type: Number },
     added: { type: Number },
     stores: [String],
-    screenshots: [String],
   },
   { versionKey: false }
 );

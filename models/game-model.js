@@ -20,7 +20,7 @@ const GameSchema = new Schema(
     name: { type: String, unique: true },
     platforms: [{ type: Schema.Types.ObjectId, ref: "Platform" }],
     publishers: [{ type: Schema.Types.ObjectId, ref: "Publisher" }],
-    ratingMpaa: [String],
+    ratingMpaa: { type: String },
     release: { type: String },
     screenshots: [String],
   },

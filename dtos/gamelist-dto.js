@@ -11,7 +11,6 @@ module.exports = class AllGamesListDto {
     this.ratingMetacritic = data.metacritic;
     this.ratingTop = data.rating_top;
     this.release = data.released;
-    this.screenshots = data.short_screenshots?.map((e) => e.image);
     this.stores = data.stores?.map((e) => e.store?.name);
     this.name = data.name;
     this.inCollection = false;

@@ -7,10 +7,11 @@ const AllGamesList = require("../models/all-games-model");
 const Users = require("../models/users-model");
 
 const GameDto = require("../dtos/game-dto");
+const GameUnify = require("../dtos/game-unify");
 const GamesListDto = require("../dtos/gamelist-dto");
 
 const collectionService = require("../services/collection-service");
-const dbFileds = "-_id-__v";
+const dbFileds = "-_id-__v-name";
 
 class GameService {
   async markInCollectionItems(userId, searchResult) {
@@ -63,18 +64,19 @@ class GameService {
 
       const time = await collectionService.setGameTime(userId, id);
 
-      const { inCollectionUsers, _id, ...result } = storedResult;
       if (time) {
-        result.playedTime = time;
+        storedResult.playedTime = time;
       }
-      return { ...result, inCollection: isInCollection };
+      storedResult.inCollection = isInCollection;
+
+      return new GameDto(storedResult);
     }
 
     return storedResult;
   }
 
   async saveGameDetails(apiResponse) {
-    const game = new GameDto(apiResponse);
+    const game = new GameUnify(apiResponse);
     const { id, developers, publishers, platforms } = game;
 
     const devObjIds = await this.insertToCollection(developers, Developers);
@@ -89,24 +91,17 @@ class GameService {
     });
 
     await newGame.save();
-    const { inCollectionUsers, _id, ...result } =
-      await this.populateGameDetails(Games.findOne({ id }));
+    const populateddetails = await this.populateGameDetails(
+      Games.findOne({ id })
+    );
 
-    return result;
+    return new GameDto(populateddetails);
   }
 
   async checkStoredAllGamesListPage(page, userId) {
     const storedPage = await AllGamesList.findOne({ page }).select(dbFileds);
 
     if (userId && storedPage?.list?.length) {
-      // const userCollection = await Users.findById(userId);
-      // const result = storedPage.list?.map((e) => {
-      //   if (userCollection.gamesCollection.ids.includes(e.id)) {
-      //     e.inCollection = true;
-      //   }
-      //   return e;
-      // });
-
       return await this.markInCollectionItems(userId, storedPage.list);
     }
     return storedPage?.list;
@@ -121,8 +116,10 @@ class GameService {
     if (!array || !array.length) return [];
     return Promise.all(
       array.map(async (e) => {
-        const existItem = await collection.findOne({ id: e?.id });
-        return existItem ? existItem._id : (await collection.create(e))._id;
+        const existItem = await collection.findOne({ name: e });
+        return existItem
+          ? existItem._id
+          : (await collection.create({ name: e }))._id;
       })
     );
   }

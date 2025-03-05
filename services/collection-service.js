@@ -3,6 +3,7 @@ const ActorsCollection = require("../models/actor-model");
 const Games = require("../models/game-model");
 const Users = require("../models/users-model");
 const ApiErrors = require("../exceptions/exceptions");
+const GameDto = require("../dtos/game-dto");
 
 class CollectionService {
   async saveCollectable(props) {
@@ -26,8 +27,8 @@ class CollectionService {
       await Promise.all([user.save(), collectionGame.save()]);
 
       collectionGame.inCollection = true;
-
-      return collectionGame;
+      console.log(collectionGame);
+      return new GameDto(collectionGame.toObject());
     }
 
     if (data.type === "movie") {
@@ -86,10 +87,9 @@ class CollectionService {
         (e) => e !== id
       );
 
-      await collectionGame.save();
-      await user.save();
+      await Promise.all([user.save(), collectionGame.save()]);
 
-      return collectionGame;
+      return new GameDto(collectionGame.toObject());
     }
   }
 
