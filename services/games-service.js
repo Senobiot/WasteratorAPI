@@ -1,28 +1,24 @@
-const GamesSearchList = require("../models/gamelist-model");
+const { GamesSearchList } = require("../models/game-search-list-model");
 const Developers = require("../models/developer-model");
 const Publishers = require("../models/publisher-model");
 const Platforms = require("../models/platform-model");
 const Games = require("../models/game-model");
 const AllGamesList = require("../models/all-games-model");
 const Users = require("../models/users-model");
-const gamesSearchItemDto = require("../dtos/gamesSearchItem-dto");
+
 const GameDto = require("../dtos/game-dto");
-const GameDto2 = require("../dtos/game-dto2");
-const AllGamesListDto = require("../dtos/all-games-dto");
+const GamesListDto = require("../dtos/gamelist-dto");
+
 const collectionService = require("../services/collection-service");
 const dbFileds = "-_id-__v";
 
 class GameService {
   async markInCollectionItems(userId, searchResult) {
-    const list = (
-      await Games.find({ inCollectionUsers: userId }).select("id")
-    ).reduce((acc, game) => {
-      acc[game.id] = true;
-      return acc;
-    }, {});
+    const currUserGameCollectionIds = (await Users.findById(userId))
+      .gamesCollection.ids;
 
-    return searchResult.list.map((e) => {
-      e.inCollection = e.id in list;
+    return searchResult.map((e) => {
+      e.inCollection = currUserGameCollectionIds.includes(e.id);
       return e;
     });
   }
@@ -30,18 +26,17 @@ class GameService {
   async checkStoredSearchList(searchQuery, userId) {
     const storedResult = await GamesSearchList.findOne({ searchQuery });
     if (storedResult) {
-      const result = await this.markInCollectionItems(userId, storedResult);
+      const result = this.markInCollectionItems(userId, storedResult.list);
       return result;
     }
     return storedResult;
   }
 
   async saveSearchList(searchQuery, apiResponse, userId) {
-    const list = apiResponse.results.map(
-      (item) => new gamesSearchItemDto(item)
-    );
+    const list = apiResponse.results.map((item) => new GamesListDto(item));
     const newSearchList = await GamesSearchList.create({ searchQuery, list });
-    return this.markInCollectionItems(userId, newSearchList);
+
+    return this.markInCollectionItems(userId, newSearchList.list);
   }
 
   async checkStoredGame(detailsUrl, userId) {
@@ -79,7 +74,7 @@ class GameService {
   }
 
   async saveGameDetails(apiResponse) {
-    const game = new GameDto2(apiResponse);
+    const game = new GameDto(apiResponse);
     const { id, developers, publishers, platforms } = game;
 
     const devObjIds = await this.insertToCollection(developers, Developers);
@@ -103,27 +98,26 @@ class GameService {
   async checkStoredAllGamesListPage(page, userId) {
     const storedPage = await AllGamesList.findOne({ page }).select(dbFileds);
 
-    if (userId && storedPage) {
-      const userCollection = await Users.findById(userId);
-      const result = storedPage.list?.map((e) => {
-        if (userCollection.gamesCollection.ids.includes(e.id)) {
-          e.inCollection = true;
-        }
-        return e;
-      });
+    if (userId && storedPage?.list?.length) {
+      // const userCollection = await Users.findById(userId);
+      // const result = storedPage.list?.map((e) => {
+      //   if (userCollection.gamesCollection.ids.includes(e.id)) {
+      //     e.inCollection = true;
+      //   }
+      //   return e;
+      // });
 
-      return result;
+      return await this.markInCollectionItems(userId, storedPage.list);
     }
     return storedPage?.list;
   }
 
   async saveAllGamesListPage(page, data) {
-    const list = data.results.map((e) => new AllGamesListDto(e));
+    const list = data.results.map((e) => new GamesListDto(e));
     return AllGamesList.create({ page, list });
   }
 
   async insertToCollection(array, collection) {
-    console.log(array);
     if (!array || !array.length) return [];
     return Promise.all(
       array.map(async (e) => {
