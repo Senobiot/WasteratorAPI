@@ -23,9 +23,8 @@ class CollectionService {
       user.gamesCollection.list.push({ game: collectionGame._id });
       user.gamesCollection.ids.push(id);
 
-      await user.save();
-      console.log("save---");
-      await collectionGame.save();
+      await Promise.all([user.save(), collectionGame.save()]);
+
       collectionGame.inCollection = true;
 
       return collectionGame;
@@ -83,7 +82,6 @@ class CollectionService {
       user.gamesCollection.list = user.gamesCollection.list.filter(
         (e) => e.game.toString() !== collectionGame._id.toString()
       );
-      console.log(user.gamesCollection);
       user.gamesCollection.ids = user.gamesCollection.ids.filter(
         (e) => e !== id
       );
@@ -119,7 +117,6 @@ class CollectionService {
     playedTime,
     id: gameId,
   }) {
-
     if (type === "game") {
       return await this.setGameTime(userId, gameId, playedTime);
     }

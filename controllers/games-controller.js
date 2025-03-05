@@ -40,23 +40,23 @@ const requestSettings = {
 
 class GamesController {
   async searchGame(req, res, next) {
-    const request = req.query.name;
+    const searchRequest = req.query.name;
     const userId = req.body.user.id;
 
     try {
       const storedList = await gameService.checkStoredSearchList(
-        request,
+        searchRequest,
         userId
       );
 
       if (storedList) {
         return res.json(storedList);
       }
-
-      const response = await fetch(requestSettings.getListByName(request));
+      const request = `${requestSettings.urlRawg}?key=${process.env.GAME_API_RAWG_KEY}&search=${searchRequest}&page_size=50&`;
+      const response = await fetch(request);
       const data = await response.json();
       const searchList = await gameService.saveSearchList(
-        request,
+        searchRequest,
         data,
         userId
       );
@@ -95,7 +95,10 @@ class GamesController {
     const { gameId } = req.body;
 
     try {
-      const storedGame = await gameService.checkStoredGameDetails(gameId, userId);
+      const storedGame = await gameService.checkStoredGameDetails(
+        gameId,
+        userId
+      );
 
       if (storedGame) {
         return res.json(storedGame);
@@ -104,7 +107,7 @@ class GamesController {
       const response = await fetch(requestSettings.getGameDetailsById(gameId));
       const data = await response.json();
       const gameDetails = await gameService.saveGameDetails(data);
-      
+
       return res.json(gameDetails);
     } catch (error) {
       console.log(error);
@@ -119,14 +122,20 @@ class GamesController {
     const request = `${requestSettings.urlRawg}?key=${process.env.GAME_API_RAWG_KEY}&page=${page}`;
 
     try {
-      const storedPage = await gameService.checkStoredAllGamesListPage(page, userId);
+      const storedPage = await gameService.checkStoredAllGamesListPage(
+        page,
+        userId
+      );
       if (storedPage) {
         return res.json(storedPage);
       }
 
       const response = await fetch(request);
       const data = await response.json();
-      const allGamesListPage = await gameService.saveAllGamesListPage(page, data);
+      const allGamesListPage = await gameService.saveAllGamesListPage(
+        page,
+        data
+      );
       return res.json(allGamesListPage.list);
     } catch (error) {
       console.log(error);
