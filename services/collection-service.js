@@ -27,7 +27,7 @@ class CollectionService {
       await Promise.all([user.save(), collectionGame.save()]);
 
       collectionGame.inCollection = true;
-      console.log(collectionGame);
+
       return new GameDto(collectionGame.toObject());
     }
 
