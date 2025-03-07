@@ -1,10 +1,15 @@
 const moviesService = require("../services/movies-service");
 
 const requestSettings = {
-  url: "https://api.kinopoisk.dev/v1.4/movie/search?page=1&limit=40&query=",
+  url: "https://api.kinopoisk.dev/v1.4/movie/",
+  searchParams: "search?page=1&limit=40&query=",
 
   getListByName(name = "") {
-    return this.url + name;
+    return this.url + this.searchParams + name;
+  },
+
+  getDetails(id = "") {
+    return this.url + id;
   },
 
   get options() {
@@ -50,6 +55,27 @@ class MoviesController {
     } catch (error) {
       console.log(error);
       next(error);
+    }
+  }
+  async getDetails(req, res, next) {
+    const movieId = req.query.id;
+
+    try {
+      const storedMove = await moviesService.checkStoredMove(movieId);
+
+      if (storedMove) {
+        return res.json(storedMove);
+      }
+      const response = await fetch(
+        requestSettings.getDetails(movieId),
+        requestSettings.options
+      );
+      const data = await response.json();
+      const searchList = await moviesService.saveMovieDetails(data);
+
+      return res.json(searchList);
+    } catch (error) {
+      console.log(error);
     }
   }
 }
