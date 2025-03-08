@@ -35,7 +35,7 @@ class CollectionService {
 
     if (type === "movie") {
       const collectionMovie = await Movies.findOne({ id }).populate("actors");
-      console.log(collectionMovie);
+      console.log(collectionMovie.inCollectionUsers);
       collectionMovie.inCollectionUsers.push(userId);
 
       const user = await Users.findById(userId);
@@ -105,21 +105,34 @@ class CollectionService {
   }
 
   async getCollection(props) {
-    const {
-      user: { id: userId },
-    } = props;
-    const userCollection = await Users.findById(userId)
-      .populate({
-        path: "gamesCollection.list.game",
-        select: "-inCollectionUsers -_id",
-      })
-      .lean();
-    const result = userCollection.gamesCollection.list.map((e) => ({
-      ...e.game,
-      time: e.time,
-    }));
+    const userId = props.body.user.id;
+    const type = props.query.type;
 
-    return result;
+    if (type === "game") {
+      const user = await Users.findById(userId)
+        .populate({
+          path: "gamesCollection.list.game",
+          select: "-inCollectionUsers -_id",
+        })
+        .lean();
+
+      return user.gamesCollection.list.map((e) => ({
+        ...e.game,
+        time: e.time,
+      }));
+    } else {
+      const user = await Users.findById(userId)
+        .populate({
+          path: "moviesCollection.list.movie",
+          select: "-inCollectionUsers -_id",
+        })
+        .lean();
+
+      return user.moviesCollection.list.map((e) => ({
+        ...e.movie,
+        time: e.time,
+      }));
+    }
   }
 
   async updateCollectableTime({

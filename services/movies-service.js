@@ -26,7 +26,7 @@ class MoviesService {
     return storedResult;
   }
 
-  async checkStoredMove(id) {
+  async checkStoredMove(id, userId) {
     const storedResult = await Movies.findOne({ id })
       .populate({
         path: "actors",
