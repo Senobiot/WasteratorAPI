@@ -1,17 +1,19 @@
-const MoviesCollection = require("../models/movie-model");
+const Movies = require("../models/movie-model");
 const ActorsCollection = require("../models/actor-model");
 const Games = require("../models/game-model");
 const Users = require("../models/users-model");
-const ApiErrors = require("../exceptions/exceptions");
+
 const GameDto = require("../dtos/game-dto");
+const MovieDto = require("../dtos/movie-dto");
 
 class CollectionService {
   async saveCollectable(props) {
-    const { user, data } = props;
-    const { id } = data;
-    const { id: userId } = user;
+    const {
+      user: { id: userId },
+      data: { id, type },
+    } = props;
 
-    if (data.type === "game") {
+    if (type === "game") {
       // TODO refactor it completely
       const collectionGame = await Games.findOne({ id })
         .populate("developers")
@@ -31,46 +33,34 @@ class CollectionService {
       return new GameDto(collectionGame.toObject());
     }
 
-    if (data.type === "movie") {
-      const collectionMovie = await MoviesCollection.findOne({ id });
-      if (!collectionMovie) {
-        data.inCollectionUsers = [userId];
-        try {
-          await ActorsCollection.insertMany(data.actors, { ordered: false });
-        } catch (error) {
-          if (error.code !== 11000) {
-            console.log(error);
-          }
-        }
+    if (type === "movie") {
+      const collectionMovie = await Movies.findOne({ id }).populate("actors");
+      console.log(collectionMovie);
+      collectionMovie.inCollectionUsers.push(userId);
 
-        const storedActors = await ActorsCollection.find();
-        const filmActorsObjectIds = storedActors
-          .filter((actor) => data.actors.find((e) => e.id === actor.id))
-          .map((e) => e._id);
-        const newCollectionMovie = await MoviesCollection.create({
-          ...data,
-          actors: filmActorsObjectIds,
-        });
-        await newCollectionMovie.save();
-        return newCollectionMovie;
-      } else {
-        if (collectionMovie.inCollectionUsers.includes(userId)) {
-          throw ApiErrors.CollectionError("Уже в коллекции");
-        }
+      const user = await Users.findById(userId);
 
-        collectionMovie.inCollectionUsers.push(id);
-        await collectionMovie.save();
-        return collectionMovie;
-      }
+      user.moviesCollection.list.push({
+        movie: collectionMovie._id,
+        time: collectionMovie.length,
+      });
+      user.moviesCollection.ids.push(id);
+
+      await Promise.all([user.save(), collectionMovie.save()]);
+
+      collectionMovie.inCollection = true;
+
+      return new MovieDto(collectionMovie.toObject());
     }
   }
 
   async deleteCollectable(props) {
-    const { user, data } = props;
-    const { id } = data;
-    const { id: userId } = user;
+    const {
+      user: { id: userId },
+      data: { id, type },
+    } = props;
 
-    if (data.type === "game") {
+    if (type === "game") {
       const collectionGame = await Games.findOne({ id })
         .populate("developers")
         .populate("publishers")
@@ -90,6 +80,27 @@ class CollectionService {
       await Promise.all([user.save(), collectionGame.save()]);
 
       return new GameDto(collectionGame.toObject());
+    }
+    if (type === "movie") {
+      const collectionMovie = await Movies.findOne({ id }).populate("actors");
+      collectionMovie.inCollectionUsers =
+        collectionMovie.inCollectionUsers.filter(
+          (e) => e.toString() !== userId
+        );
+      collectionMovie.inCollection = false;
+
+      const user = await Users.findById(userId);
+
+      user.moviesCollection.list = user.moviesCollection.list.filter(
+        (e) => e.movie.toString() !== collectionMovie._id.toString()
+      );
+      user.moviesCollection.ids = user.moviesCollection.ids.filter(
+        (e) => e !== id
+      );
+
+      await Promise.all([user.save(), collectionMovie.save()]);
+
+      return new MovieDto(collectionMovie.toObject());
     }
   }
 
