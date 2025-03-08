@@ -58,10 +58,11 @@ class MoviesController {
     }
   }
   async getDetails(req, res, next) {
+    const userId = req.body.user.id;
     const movieId = req.query.id;
 
     try {
-      const storedMove = await moviesService.checkStoredMove(movieId);
+      const storedMove = await moviesService.checkStoredMove(movieId, userId);
 
       if (storedMove) {
         return res.json(storedMove);
