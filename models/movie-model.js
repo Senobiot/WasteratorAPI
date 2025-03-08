@@ -18,7 +18,7 @@ const MovieSchema = new Schema(
     fees: { type: Array },
     genres: { type: Array },
     id: { type: Number, required: true },
-    isInCollection: { type: Boolean, default: false },
+    inCollection: { type: Boolean, default: false },
     isSeries: { type: Boolean },
     length: { type: Number },
     logoUrl: { type: String },
