@@ -117,7 +117,7 @@ class GamesController {
 
   async getAllGames(req, res, next) {
     const page = req.query.page || 1;
-    const userId = req.body.user.id;
+    const userId = req.body.user?.id;
 
     const request = `${requestSettings.urlRawg}?key=${process.env.GAME_API_RAWG_KEY}&page=${page}`;
 
