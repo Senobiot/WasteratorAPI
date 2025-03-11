@@ -17,12 +17,11 @@ const UserSchema = new Schema(
           game: {
             type: Schema.Types.ObjectId,
             ref: "Game",
-            unique: true
           },
           time: { type: Number, default: 0 },
         },
       ],
-      ids: [{ type: Number, unique: true }],
+      ids: [{ type: Number }],
     },
     moviesCollection: {
       list: [
@@ -30,12 +29,11 @@ const UserSchema = new Schema(
           movie: {
             type: Schema.Types.ObjectId,
             ref: "Movie",
-            unique: true
           },
           time: { type: Number, default: 0 },
         },
       ],
-      ids: [{ type: Number, unique: true }],
+      ids: [{ type: Number }],
     },
   },
   { versionKey: false }

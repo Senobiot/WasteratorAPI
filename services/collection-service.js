@@ -35,7 +35,6 @@ class CollectionService {
 
     if (type === "movie") {
       const collectionMovie = await Movies.findOne({ id }).populate("actors");
-      console.log(collectionMovie.inCollectionUsers);
       collectionMovie.inCollectionUsers.push(userId);
 
       const user = await Users.findById(userId);
