@@ -73,6 +73,14 @@ class UserController {
       next(error);
     }
   }
+
+  async setAvatar(req, res, next) {
+    try {
+      await userService.setAvatar(req);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new UserController();
