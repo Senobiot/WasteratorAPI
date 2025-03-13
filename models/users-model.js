@@ -11,6 +11,11 @@ const UserSchema = new Schema(
     password: { type: String, required: true },
     hasActivated: { type: Boolean, default: false },
     activationLink: { type: String },
+    avatar: {
+      data: { type: Buffer },
+      contentType: { type: String },
+      fileName: { type: String },
+    },
     gamesCollection: {
       list: [
         {

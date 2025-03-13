@@ -23,6 +23,7 @@ class UserController {
         maxAge: 30 * 24 * 60 * 60 * 1000,
         httpOnly: true,
       });
+
       return res.json(userData);
     } catch (error) {
       next(error);
@@ -76,7 +77,8 @@ class UserController {
 
   async setAvatar(req, res, next) {
     try {
-      await userService.setAvatar(req);
+      const userUpdatedProfile = await userService.setAvatar(req);
+      return res.json(userUpdatedProfile);
     } catch (error) {
       next(error);
     }

@@ -115,7 +115,7 @@ class CollectionService {
         })
         .lean();
 
-      return user.gamesCollection.list.map((e) => ({
+      return user.gamesCollection.list?.map((e) => ({
         ...e.game,
         time: e.time,
       }));
@@ -127,7 +127,7 @@ class CollectionService {
         })
         .lean();
 
-      return user.moviesCollection.list.map((e) => ({
+      return user.moviesCollection.list?.map((e) => ({
         ...e.movie,
         time: e.time,
       }));
