@@ -7,22 +7,26 @@ const UserSchema = new Schema(
     birthday: { type: String },
     gender: { type: String },
     email: { type: String, unique: true, required: true },
-    phone: { type: Number },
+    phone: { type: String },
     password: { type: String, required: true },
     hasActivated: { type: Boolean, default: false },
     activationLink: { type: String },
+    avatar: {
+      data: { type: Buffer },
+      contentType: { type: String },
+      fileName: { type: String },
+    },
     gamesCollection: {
       list: [
         {
           game: {
             type: Schema.Types.ObjectId,
             ref: "Game",
-            unique: true
           },
           time: { type: Number, default: 0 },
         },
       ],
-      ids: [{ type: Number, unique: true }],
+      ids: [{ type: Number }],
     },
     moviesCollection: {
       list: [
@@ -30,12 +34,11 @@ const UserSchema = new Schema(
           movie: {
             type: Schema.Types.ObjectId,
             ref: "Movie",
-            unique: true
           },
           time: { type: Number, default: 0 },
         },
       ],
-      ids: [{ type: Number, unique: true }],
+      ids: [{ type: Number }],
     },
   },
   { versionKey: false }

@@ -35,7 +35,6 @@ class CollectionService {
 
     if (type === "movie") {
       const collectionMovie = await Movies.findOne({ id }).populate("actors");
-      console.log(collectionMovie.inCollectionUsers);
       collectionMovie.inCollectionUsers.push(userId);
 
       const user = await Users.findById(userId);
@@ -116,7 +115,7 @@ class CollectionService {
         })
         .lean();
 
-      return user.gamesCollection.list.map((e) => ({
+      return user.gamesCollection.list?.map((e) => ({
         ...e.game,
         time: e.time,
       }));
@@ -128,7 +127,7 @@ class CollectionService {
         })
         .lean();
 
-      return user.moviesCollection.list.map((e) => ({
+      return user.moviesCollection.list?.map((e) => ({
         ...e.movie,
         time: e.time,
       }));

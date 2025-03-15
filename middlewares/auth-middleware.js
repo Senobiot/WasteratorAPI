@@ -9,7 +9,7 @@ module.exports = function (req, res, next) {
     }
 
     const accessToken = authHeader.split(" ")[1];
-    if (!accessToken) {   
+    if (!accessToken) {
       return next(ApiErrors.UnauthorizedError());
     }
 
@@ -17,7 +17,6 @@ module.exports = function (req, res, next) {
     if (!userData) {
       return next(ApiErrors.UnauthorizedError());
     }
-
     req.body.user = userData;
     next();
   } catch (error) {
