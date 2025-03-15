@@ -7,7 +7,7 @@ const UserSchema = new Schema(
     birthday: { type: String },
     gender: { type: String },
     email: { type: String, unique: true, required: true },
-    phone: { type: Number },
+    phone: { type: String },
     password: { type: String, required: true },
     hasActivated: { type: Boolean, default: false },
     activationLink: { type: String },
