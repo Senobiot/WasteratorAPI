@@ -80,6 +80,7 @@ class UserController {
       const userUpdatedProfile = await userService.setAvatar(req);
       return res.json(userUpdatedProfile);
     } catch (error) {
+      console.log(error);
       next(error);
     }
   }
