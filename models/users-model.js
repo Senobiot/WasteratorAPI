@@ -12,9 +12,8 @@ const UserSchema = new Schema(
     hasActivated: { type: Boolean, default: false },
     activationLink: { type: String },
     avatar: {
-      data: { type: Buffer },
-      contentType: { type: String },
-      fileName: { type: String },
+      url: { type: String },
+      variant: { type: String },
     },
     gamesCollection: {
       list: [
