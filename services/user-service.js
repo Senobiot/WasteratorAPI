@@ -111,15 +111,11 @@ class UserService {
     try {
       const {
         user: { id: userId },
+        avatar,
       } = req.body;
 
       const user = await UserModel.findById(userId);
-
-      user.avatar = {
-        data: req.file.buffer,
-        contentType: req.file.mimetype,
-        fileName: req.file.originalname,
-      };
+      user.avatar = avatar;
       await user.save();
 
       return new UserDto(user);
